@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KNIOS | CoSM Systems</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  background: #080609;
+  color: #ded8d8;
+  font-family: monospace;
+  margin: 0;
+  padding: 24px;
+}
+
+header {
+  border-bottom: 1px solid #e05236;
+  padding: 20px 0;
+}
+
+.brand {
+  color: #e05236;
+  letter-spacing: 4px;
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 42px;
+  letter-spacing: 6px;
+  font-weight: normal;
+}
+
+h2 {
+  color: #e05236;
+  font-size: 14px;
+}
+
+.panel {
+  border: 1px solid #70232e;
+  padding: 16px;
+  margin-top: 20px;
+  background: #100c10;
+}
+
+.status { color: #e05236; }
+
+button {
+  background: #70232e;
+  color: white;
+  border: 1px solid #e05236;
+  padding: 13px;
+  font-family: monospace;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.result {
+  color: #ded8d8;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+footer {
+  margin-top: 35px;
+  color: #777;
+  font-size: 11px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="brand">C O S M // SYSTEMS</div>
+<h1>KNIOS</h1>
+<div class="brand">TACTICAL SYSTEMS DIVISION</div>
+</header>
+
+<section class="panel">
+<h2>SYSTEM OVERVIEW</h2>
+<p class="status"></p><p>Environment: Alpine Linux / iSH</p>
+<p>Platform: iPadOS</p>
+<p>Interface: KNIOS v1.1</p>
+</section>
+
+<section class="panel">
+<h2>NETWORK STATUS</h2>
+<div id="network">Checking...</div>
+</section>
+
+<section class="panel">
+<h2>SYSTEM DIAGNOSTICS</h2>
+<div id="results" class="result">
+Awaiting diagnostic command...
+</div>
+<button onclick="runDiagnostics()">
+RUN SYSTEM DIAGNOSTICS
+</button>
+</section>
+
+<section class="panel">
+<h2>SYSTEM CLOCK</h2>
+<div id="clock"></div>
+</section>
+
+<section class="panel">
+<h2>HEALTH MONITOR</h2>
+<div class="result" id="health-results">
+Awaiting health check...
+</div>
+<button onclick="updateHealth()">RUN HEALTH CHECK</button>
+</section>
+
+
+<section class="panel">
+<h2>SECURITY MONITOR</h2>
+<div class="result" id="security-results">
+Awaiting security assessment...
+</div>
+<button onclick="runSecurityCheck()">
+RUN SECURITY AUDIT
+</button>
+</section>
+
+
+<section class="panel">
+<h2>SYSTEM INTELLIGENCE v1.3</h2>
+<div class="result" id="intelligence-results">
+Awaiting intelligence scan...
+</div>
+<button onclick="runSystemIntelligence()">
+RUN INTELLIGENCE SCAN
+</button>
+</section>
+
+<footer>
+CoSM SYSTEMS // KNIOS
+<br><br>
+AUTHORIZED LAB ENVIRONMENT
+<br>
+BUILD 002 // 2026
+</footer>
+
+<script>
+async function runDiagnostics() {
+    const output = document.getElementById("results");
+    output.textContent = "Running diagnostics...";
+
+    const start = performance.now();
+
+    try {
+        const response = await fetch(
+            window.location.pathname + "?check=" + Date.now(),
+            { cache: "no-store" }
+        );
+
+        const elapsed = (performance.now() - start).toFixed(2);
+
+        output.textContent =
+            "LOCAL SERVER: " + (response.ok ? "ONLINE" : "ERROR") +
+            "\nHTTP STATUS: " + response.status +
+            "\nRESPONSE TIME: " + elapsed + " ms" +
+            "\nBROWSER: " + navigator.userAgent +
+            "\nCONNECTIVITY: " + (navigator.onLine ? "ONLINE" : "OFFLINE") +
+            "\nCHECK TIME: " + new Date().toLocaleTimeString();
+
+    } catch (error) {
+        output.textContent = "DIAGNOSTIC FAILED\n" + error.message;
+    }
+}
+
+function updateClock() {
+  document.getElementById("clock").textContent =
+    new Date().toLocaleString();
+}
+
+function updateNetwork() {
+    document.getElementById("network").textContent =
+        navigator.onLine ? "ONLINE" : "OFFLINE";
+}
+
+updateClock();
+updateNetwork();
+setInterval(updateClock, 1000);
+window.addEventListener("online", updateNetwork);
+window.addEventListener("offline", updateNetwork);
+
+function updateHealth() {
+    const output = document.getElementById("health-results");
+
+    const memory = navigator.deviceMemory
+        ? navigator.deviceMemory + " GB (estimated)"
+        : "Not exposed by browser";
+
+    const cores = navigator.hardwareConcurrency
+        ? navigator.hardwareConcurrency
+        : "Not exposed";
+
+    output.textContent =
+        "RUNTIME: OPERATIONAL\n" +
+        "NETWORK: " + (navigator.onLine ? "ONLINE" : "OFFLINE") + "\n" +
+        "CPU CORES: " + cores + "\n" +
+        "MEMORY: " + memory + "\n" +
+        "DISPLAY: " + screen.width + " x " + screen.height + "\n" +
+        "BROWSER: " + navigator.userAgent + "\n" +
+        "CHECK TIME: " + new Date().toLocaleString();
+}
+
+
+function runSecurityCheck() {
+    const output = document.getElementById("security-results");
+
+    if (!output) {
+        console.error("KNIOS: Security results panel missing.");
+        return;
+    }
+
+    try {
+        const isLocal = [
+            "localhost",
+            "127.0.0.1",
+            "[::1]"
+        ].includes(location.hostname);
+
+        const checks = [
+            ["LOCAL ORIGIN", isLocal ? "PASS" : "REVIEW"],
+            ["SECURE CONTEXT",
+                window.isSecureContext ? "PASS" : "REVIEW"],
+            ["NETWORK LINK",
+                navigator.onLine ? "ONLINE" : "OFFLINE"],
+            ["DASHBOARD DOM",
+                document.body ? "PASS" : "FAIL"],
+            ["DIAGNOSTICS MODULE",
+                typeof runDiagnostics === "function" ? "PASS" : "REVIEW"],
+            ["HEALTH MODULE",
+                typeof updateHealth === "function" ? "PASS" : "REVIEW"],
+            ["BROWSER API",
+                typeof navigator !== "undefined" ? "PASS" : "FAIL"]
+        ];
+
+        const report = checks.map(
+            ([name, status]) => name + ": " + status
+        ).join("\n");
+
+        output.textContent =
+            "KNIOS SECURITY AUDIT v1.2\n" +
+            "-------------------------\n" +
+            report +
+            "\n\nAUDIT COMPLETE\n" +
+            "CHECK TIME: " + new Date().toLocaleString() +
+            "\nScope: Local browser checks only." +
+            "\nNetwork status does not verify internet security." +
+            "\nNo external systems scanned.";
+
+    } catch (error) {
+        output.textContent =
+            "KNIOS AUDIT ERROR\n" + String(error);
+        console.error(error);
+    }
+}
+
+
+function runSystemIntelligence() {
+    const output = document.getElementById(
+        "intelligence-results"
+    );
+
+    if (!output) return;
+
+    try {
+        const checks = [
+            ["JAVASCRIPT",
+                typeof window === "object"],
+            ["FETCH API",
+                typeof fetch === "function"],
+            ["PROMISE API",
+                typeof Promise === "function"],
+            ["CRYPTO API",
+                !!window.crypto],
+            ["SECURE CONTEXT",
+                window.isSecureContext],
+            ["NETWORK LINK",
+                navigator.onLine]
+        ];
+
+        const report = checks.map(([name, passed]) =>
+            name + ": " + (passed ? "PASS" : "REVIEW")
+        ).join("\n");
+
+        output.textContent =
+            "KNIOS SYSTEM INTELLIGENCE v1.3\n" +
+            "------------------------------\n" +
+            report + "\n\n" +
+            "DISPLAY: " + screen.width +
+            " x " + screen.height + "\n" +
+            "VIEWPORT: " + innerWidth +
+            " x " + innerHeight + "\n" +
+            "CPU THREADS: " +
+            (navigator.hardwareConcurrency || "Unavailable") +
+            "\nMEMORY: " +
+            (navigator.deviceMemory || "Unavailable") +
+            "\nCHECK TIME: " +
+            new Date().toLocaleString() + "\n\n" +
+            "Scope: Local browser capability checks only.";
+    } catch (error) {
+        output.textContent =
+            "INTELLIGENCE ERROR: " + String(error);
+    }
+}
+
+</script>
+
+</body>
+</html>
